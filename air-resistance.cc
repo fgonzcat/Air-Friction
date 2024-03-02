@@ -33,8 +33,9 @@ double xmax=ancho/2, ymax=alto/2, xmin=-ancho/2, ymin=-alto/2, zmin=-profundidad
 double zoom = 3.1*ymax/(2*tan(M_PI/8));
 double rotx = -70, roty = 0, rotz = 0, tx = 0, ty = 0;
 int lastx=0, lasty=0;
-double t=0, dt=0.1;
-bool pause=false;
+double t=0, dt=0.10;
+bool pause=true;
+int N=0;							// Increasing number of data
 /***************************************************************/
 /***************************************************************/
 //---------------- BOUNDARY CONDITIONS ------------------------//
@@ -46,6 +47,8 @@ double X1=xo, Y1=yo;
 // Velocidad R'(0)=(X2,Y2)
 const double vox=70, voy=80;
 double X2=vox, Y2=voy;
+double trajec[1000][2];
+double trajec_teo[1000][2];
 //------------------------------------------------------------//
 
 
@@ -232,6 +235,8 @@ void Solver(){
 
 	}
   t += dt;
+  int step=t/dt;
+  if (step%2 ==0) {trajec[N][0]=X1; trajec[N][1]=Y1;   trajec_teo[N][0]=X_teo; trajec_teo[N][1]=Y_teo;  N++;}
 
 	if (Y1<=R && place_real==0){ Y1=R; place_real=1; cout << "dmax_real=" << X1-xo << endl;}
 	if (X1>=xmax){ X2=-X2;}
@@ -255,17 +260,29 @@ void Dibuja(void){
 	if (pause==false){Solver();}
 	//cout << X1 << "\t" << Y1 <<  "\t" << xo+vox*t << "\t" << yo+voy*t-0.5*g*t*t << endl;
 	
+  //*** Sphere following the Numerical Solution with drag (X1,Y1) ****//
 	glPushMatrix();
 	glTranslatef(X1,0,Y1);
 	//glRotatef(120, 0.0, 1.0, 0.0);
 	//glRotatef(100*t, 0.0, 0.0, 1.0);
 	glColor3d(1,0,0); glutWireSphere(0.5*R, 20, 16); // Trajectory with drag
 	glPopMatrix();
+  // Trajectory with drag
+  glBegin(GL_LINES);
+  for (int q=0;q<N;q++)  glVertex3f(trajec[q][0],0,trajec[q][1]);
+  glEnd();
 
+
+  //*** Sphere following Analytical Solution with no drag (X_teo,Y_teo) ****//
 	glPushMatrix();
 	glTranslatef(X_teo,0,Y_teo);
 	glColor3d(0,1,0); glutWireSphere(R, 20, 16); // No-drag trajectory
 	glPopMatrix();
+  // Trajectory with no drag
+  glBegin(GL_LINES);
+  for (int q=0;q<N;q++)  glVertex3f(trajec_teo[q][0],0,trajec_teo[q][1]);
+  glEnd();
+
 
 	glColor3d(0,1,0);
 	glBegin(GL_LINES);
