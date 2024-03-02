@@ -33,10 +33,21 @@ double xmax=ancho/2, ymax=alto/2, xmin=-ancho/2, ymin=-alto/2, zmin=-profundidad
 double zoom = 3.1*ymax/(2*tan(M_PI/8));
 double rotx = -70, roty = 0, rotz = 0, tx = 0, ty = 0;
 int lastx=0, lasty=0;
-double t=0, dt=2e-2;
-bool pausa=true;
+double t=0, dt=0.1;
+bool pause=false;
 /***************************************************************/
 /***************************************************************/
+//---------------- BOUNDARY CONDITIONS ------------------------//
+double g=9.8;
+double R=20;  // size of the sphere
+// Posicion R(0)=(X1,Y1)
+const double xo=xmin, yo=100.1+R;
+double X1=xo, Y1=yo;
+// Velocidad R'(0)=(X2,Y2)
+const double vox=70, voy=80;
+double X2=vox, Y2=voy;
+//------------------------------------------------------------//
+
 
 //------------------------------------------GLUT FUNCTIONS-----------------------------------------------------------//
 void Inicializa(void){
@@ -69,7 +80,7 @@ void Inicializa(void){
    gluLookAt(0,0,zoom,0,0,0,0,1,0); 
 }
 
-void Time(void){ if (pausa==false){t+=dt;}	glutPostRedisplay();}
+void Time(void){  glutPostRedisplay(); }
 
 void Mouse(int b,int s,int x,int y){
 	lastx=x;
@@ -143,7 +154,7 @@ void Keyboard(unsigned char key, int x, int y){
 		break;
 		case 'q': exit(0);
 		break;
-		case 'p': pausa=!pausa;
+		case 'p': pause=!pause;
 		break;
 	}
 }
@@ -160,15 +171,6 @@ void drawStringBig(char *s){
 }
 //-------------------------------------------------------------------------------------------------------------------//
 
-//---------------- BOUNDARY CONDITIONS ------------------------//
-double R=20;
-// Posicion R(0)=(X1,Y1)
-const double xo=xmin, yo=100.1+R;
-double X1=xo, Y1=yo;
-// Velocidad R'(0)=(X2,Y2)
-const double vox=70, voy=80;
-double X2=vox, Y2=voy;
-//------------------------------------------------------------//
 double X_teo=xo, Y_teo=yo, place_teo=0, place_real=0;
 double	k1X1, k2X1, k3X1, k4X1;
 double	k1X2, k2X2, k3X2, k4X2;
@@ -176,13 +178,12 @@ double	k1Y1, k2Y1, k3Y1, k4Y1;
 double	k1Y2, k2Y2, k3Y2, k4Y2;
 
 double m=1;
-double g=9.8;
-double Fo=0.001;
+double F0=0.001;
 
 double fX1(double X1,double X2,double Y1,double Y2){ return X2;}
 double fY1(double X1,double X2,double Y1,double Y2){ return Y2;}
-double fX2(double X1,double X2,double Y1,double Y2){ return -(Fo/m)*sqrt(X2*X2+Y2*Y2)*X2;}
-double fY2(double X1,double X2,double Y1,double Y2){ return -(Fo/m)*sqrt(X2*X2+Y2*Y2)*Y2-g;}
+double fX2(double X1,double X2,double Y1,double Y2){ return -(F0/m)*sqrt(X2*X2+Y2*Y2)*X2;}
+double fY2(double X1,double X2,double Y1,double Y2){ return -(F0/m)*sqrt(X2*X2+Y2*Y2)*Y2-g;}
 
 void Solver(){
 	if (place_teo==0){
@@ -218,18 +219,28 @@ void Solver(){
 	k4Y2=dt*fY2(X1+k3X1,X2+k3X2,Y1+k3Y1,Y2+k3Y2);
 
 	if (place_real==0){
-		X1=X1+(k1X1+2*k2X1+2*k3X1+k4X1)/6;
-		Y1=Y1+(k1Y1+2*k2Y1+2*k3Y1+k4Y1)/6;
-		X2=X2+(k1X2+2*k2X2+2*k3X2+k4X2)/6;
-		Y2=Y2+(k1Y2+2*k2Y2+2*k3Y2+k4Y2)/6;
+		//X1=X1+(k1X1+2*k2X1+2*k3X1+k4X1)/6;
+		//Y1=Y1+(k1Y1+2*k2Y1+2*k3Y1+k4Y1)/6;
+		//X2=X2+(k1X2+2*k2X2+2*k3X2+k4X2)/6;
+		//Y2=Y2+(k1Y2+2*k2Y2+2*k3Y2+k4Y2)/6;
+
+    //*** Euler Cromer ***//
+    X2 += dt*fX2(X1,X2,Y1,Y2); 
+    Y2 += dt*fY2(X1,X2,Y1,Y2); 
+    X1 += X2*dt;
+    Y1 += Y2*dt;
+
 	}
-	
+  t += dt;
+
 	if (Y1<=R && place_real==0){ Y1=R; place_real=1; cout << "dmax_real=" << X1-xo << endl;}
 	if (X1>=xmax){ X2=-X2;}
 
 	if (Y_teo<=R && place_teo==0){ Y_teo=R; place_teo=1; cout << "dmax_teo=" << X_teo-xo << endl;}
 //	if (X1<=xmin){ X2=-X2;}
 }
+
+
 
 void Dibuja(void){
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -241,21 +252,21 @@ void Dibuja(void){
 	glRotatef(rotx,1,0,0);
 	glRotatef(roty,0,0,1);
 
-	if (pausa==false){Solver();}
-//	cout << X1 << "\t" << Y1 << endl;
+	if (pause==false){Solver();}
+	//cout << X1 << "\t" << Y1 <<  "\t" << xo+vox*t << "\t" << yo+voy*t-0.5*g*t*t << endl;
 	
 	glPushMatrix();
 	glTranslatef(X1,0,Y1);
-//	glRotatef(120, 0.0, 1.0, 0.0);
-//	glRotatef(100*t, 0.0, 0.0, 1.0);
-	glColor3d(1,0,0); glutWireSphere(R, 20, 16);
+	//glRotatef(120, 0.0, 1.0, 0.0);
+	//glRotatef(100*t, 0.0, 0.0, 1.0);
+	glColor3d(1,0,0); glutWireSphere(0.5*R, 20, 16); // Trajectory with drag
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(X_teo,0,Y_teo);
-	glColor3d(1,0,1); glutWireSphere(R, 20, 16);
+	glColor3d(0,1,0); glutWireSphere(R, 20, 16); // No-drag trajectory
 	glPopMatrix();
-	
+
 	glColor3d(0,1,0);
 	glBegin(GL_LINES);
 	for(double i=xmin;i<=xmax;i+=50){	glVertex3f(i,ymin,0);	glVertex3f(i,ymax,0);}
