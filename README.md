@@ -3,10 +3,10 @@ A simple C++ code using OpenGL to visualize the trajectory of a projectile subje
 
 ## Physics Background
 
-Air excerts a drag force proportional to the velocity 
-$$\vec F_{\rm drag}= -\gamma\vec v$$
+When an object moves at high velocity, air excerts a ![drag force](https://en.wikipedia.org/wiki/Drag_equation) proportional to the square of its velocity 
+$$\vec F_{\rm drag}= -\gamma v^2\hat v= -\gamma \|\|v\|\|\vec v$$
 which, under the force of gravity, results in the Newton equation of motion
-$$\vec F=m\ddot r = -g \hat y - \gamma\dot{\vec r}.$$
+$$\vec F=m\ddot r = -g \hat y -\gamma \|\|{\dot{\vec r}}\|\|{\dot{\vec r}}.$$
 
 ## Numerical solution
 
