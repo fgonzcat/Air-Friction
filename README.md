@@ -10,7 +10,13 @@ $$\vec F=m\ddot r = -g \hat y - \gamma\dot{\vec r}.$$
 
 ## Numerical solution
 
-Using Runge Kutta of 4th order, we solve the equations of motion, and plot the trajectory in 3D space using OpenGL.
+Using Runge Kutta of 4th order, we solve the equations of motion, and plot the trajectory in 3D space using OpenGL. Compile an example
+
+```
+g++ -Wall -o integrating_equation_of_motion integrating_equation_of_motion.cpp
+```
+
+which provides the implementation of typical numerical integrators for ordinary differential equations (ODE). See also !(https://en.wikipedia.org/wiki/Numerical_methods_for_ordinary_differential_equations).
 
 
 ## Examples
