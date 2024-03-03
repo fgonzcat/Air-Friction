@@ -14,6 +14,7 @@ Using Runge Kutta of 4th order, we solve the equations of motion, and plot the t
 
 
 ## Examples
-![ex1](https://github.com/fgonzcat/Air-Friction/blob/main/examples/1.png)
-![ex2](https://github.com/fgonzcat/Air-Friction/blob/main/examples/2.png)
+![ex1](https://github.com/fgonzcat/Air-Friction/blob/main/examples/ex1_Mar-2-2024.gif)
+![ex2](https://github.com/fgonzcat/Air-Friction/blob/main/examples/ex1_Mar-2-2024.png)
 ![ex3](https://github.com/fgonzcat/Air-Friction/blob/main/examples/3.png)
+
